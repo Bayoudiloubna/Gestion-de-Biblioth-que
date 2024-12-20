@@ -2,8 +2,8 @@ pipeline {
     agent any
         tools {
         git 'Default'
-        maven 'maven 3' // Remplacez par la version de Maven installée sur Jenkins
-        jdk 'JDK 21'        // Remplacez par la version de JDK installée sur Jenkins
+        maven 'maven 3' 
+        jdk 'JDK 21'        
     }
  
 
@@ -39,7 +39,7 @@ pipeline {
         stage('Quality Analysis') {
             steps {
              echo 'Analyse de la qualite du code avec SonarQube...'
-                withSonarQubeEnv('SonarQube') { // Remplacez 'SonarQube' par votre configuration
+                withSonarQubeEnv('SonarQube') { 
                     bat 'mvn sonar:sonar'
                 }
             }
@@ -54,7 +54,7 @@ pipeline {
     post {
          always {
             echo 'Pipeline terminé.'
-            junit '*/target/surefire-reports/.xml' // Publie les résultats de tests
+            junit '**/target/surefire-reports/*.xml' // Publie les résultats de tests
         }
         success {
             emailext to: 'bayoudi2404loubna@gmail.com',
