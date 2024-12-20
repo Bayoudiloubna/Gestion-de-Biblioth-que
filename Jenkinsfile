@@ -1,34 +1,73 @@
 pipeline {
     agent any
-    environment {
-        MAVEN_HOME = tool 'maven 3' // Maven tool configured in Jenkins
+        tools {
+        git 'Default Git'
+        maven 'maven 3' // Remplacez par la version de Maven installée sur Jenkins
+        jdk 'JDK 21'        // Remplacez par la version de JDK installée sur Jenkins
     }
+ 
+
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Bayoudiloubna/Gestion-de-Biblioth-que.git'
+
+            // Clone le dépôt Git
+                echo 'Clonage du projet...'
+                            checkout scm
             }
         }
-        stage('Run Unit Tests') {
+        stage('Build') {
             steps {
-                // Run unit tests
-                sh '${MAVEN_HOME}/bin/mvn test'
+                 echo 'Compilation du projet avec Maven...'
+                bat 'mvn clean compile'
+
+            }
+            
+        }
+        stage('Test') {
+            steps {
+             echo 'Exécution des tests unitaires...'
+                bat 'mvn test'
+            }
+        }
+        stage('Package') {
+            steps {
+                echo 'Packaging du projet en fichier JAR...'
+                bat 'mvn package'
+            }
+        }
+        stage('Quality Analysis') {
+            steps {
+             echo 'Analyse de la qualite du code avec SonarQube...'
+                withSonarQubeEnv('SonarQube') { // Remplacez 'SonarQube' par votre configuration
+                    bat 'mvn sonar:sonar'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+             echo 'Déploiement simulé réussi'
+
             }
         }
     }
     post {
-        always {
-            // Archive and publish test results
-            junit '**/target/surefire-reports/*.xml'
-
-            // Send email with build status
-            emailext(
-                to: 'bayoudi2404loubna@gmail.com',
-                subject: "Jenkins Build: ${currentBuild.currentResult}",
-                body: """Build Result: ${currentBuild.currentResult}
-                        Build URL: ${env.BUILD_URL}
-                        """
-            )
+         always {
+            echo 'Pipeline terminé.'
+            junit '*/target/surefire-reports/.xml' // Publie les résultats de tests
         }
+        success {
+            emailext to: 'bayoudi2404loubna@gmail.com',
+                subject: 'Build Success',
+                body: 'Le build a été complété avec succès.'
+        }
+        failure {
+            emailext to: 'bayoudi2404loubna@gmail.com',
+                subject: 'Build Failed',
+                body: 'Le build a échoué.'
+        }
+
+       
     }
+    
 }
